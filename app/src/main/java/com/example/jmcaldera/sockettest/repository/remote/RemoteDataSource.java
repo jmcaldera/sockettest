@@ -43,6 +43,8 @@ public class RemoteDataSource implements DataSource {
     private CloseConnectionCallback mCloseConnectionCallback = null;
     private LoadOrderCallback mLoadOrderCallback = null;
 
+    private boolean isConnected = false;
+
     public static RemoteDataSource getInstance(@NonNull Context context) {
         if (INSTANCE == null) {
             INSTANCE = new RemoteDataSource(context);
@@ -183,6 +185,11 @@ public class RemoteDataSource implements DataSource {
         // No se utiliza
     }
 
+    @Override
+    public boolean isConnected() {
+        return isConnected;
+    }
+
     private class SocketReceiver extends BroadcastReceiver {
         private Context mContext;
         private SocketReceiver(@NonNull Context context) {
@@ -197,11 +204,13 @@ public class RemoteDataSource implements DataSource {
                         // Notificar que se conecto al servidor
                         Log.d(TAG, "onSuccess Connect RemoteData");
                         mOpenConnectionCallback.onSuccess();
+                        isConnected = true;
                         break;
                     case ApiConstants.ACTION_DISCONNECT_SERVER:
                         // Notificar que se desconecto del servidor
                         Log.d(TAG, "onSuccess Disconnect RemoteData");
                         mCloseConnectionCallback.onSuccess();
+                        isConnected = false;
                         break;
                     case ApiConstants.ACTION_ORDER_RECEIVED:
                         // Enviar la data recibida al UI

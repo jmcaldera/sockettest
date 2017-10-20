@@ -108,4 +108,25 @@ public class OrderPresenter implements OrderContract.Presenter {
             }
         });
     }
+
+    @Override
+    public void onResume() {
+        if (mRepository.isConnected()) {
+            mView.showConnectionEstablished();
+            // Solicita ultimo estado.
+            mRepository.loadOrder(new DataSource.LoadOrderCallback() {
+                @Override
+                public void onSuccess(Order order) {
+                    Log.d(TAG, "onSuccess loadOrder Presenter");
+                    mView.showOrder(order);
+                }
+
+                @Override
+                public void onError() {
+                    Log.d(TAG, "onError loadOrder Presenter");
+                    mView.showErrorMessage("Error cargando order");
+                }
+            });
+        }
+    }
 }

@@ -63,6 +63,12 @@ public class OrderActivity extends AppCompatActivity implements OrderContract.Vi
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mPresenter.onResume();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         active = false;

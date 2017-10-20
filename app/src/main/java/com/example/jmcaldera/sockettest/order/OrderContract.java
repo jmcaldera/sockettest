@@ -34,5 +34,7 @@ public class OrderContract {
         void openConnection();
 
         void closeConnection();
+
+        void onResume();
     }
 }

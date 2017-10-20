@@ -32,4 +32,6 @@ public interface DataSource {
     void setLoadOrderCallback(LoadOrderCallback callback);
 
     void refreshOrder();
+
+    boolean isConnected();
 }
