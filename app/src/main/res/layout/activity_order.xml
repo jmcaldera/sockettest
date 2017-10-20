@@ -11,7 +11,8 @@
         android:layout_height="wrap_content"
         android:text="@string/no_order"
         android:layout_margin="16dp"
-        android:id="@+id/order_text"/>
+        android:id="@+id/order_text"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"/>
 
     <Button
         android:layout_width="match_parent"

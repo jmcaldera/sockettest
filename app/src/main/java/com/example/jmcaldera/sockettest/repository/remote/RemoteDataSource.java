@@ -149,6 +149,8 @@ public class RemoteDataSource implements DataSource {
                         Log.d(TAG, "onSuccess Disconnect RemoteData");
                         mCloseConnectionCallback.onSuccess();
                         isConnected = false;
+                        Intent closeService = new Intent(mContext, SocketHelper.class);
+                        mContext.stopService(closeService);
                         break;
                     case ApiConstants.ACTION_ORDER_RECEIVED:
                         // Enviar la data recibida al UI
