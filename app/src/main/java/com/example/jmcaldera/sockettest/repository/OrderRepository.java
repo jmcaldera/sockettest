@@ -19,6 +19,8 @@ public class OrderRepository implements DataSource {
 
     private DataSource mRemoteDataSource;
 
+    private LoadOrderCallback mLoadOrderCallback = null;
+
     Order mCachedOrder;
 
     boolean mCacheIsOutdated = false;
@@ -94,6 +96,22 @@ public class OrderRepository implements DataSource {
             Log.d(TAG, "Loading from remote");
             loadOrderFromRemoteDataSource(callback);
         }
+    }
+
+    @Override
+    public void setLoadOrderCallback(@NonNull final LoadOrderCallback callback) {
+        mLoadOrderCallback = checkNotNull(callback);
+        mRemoteDataSource.setLoadOrderCallback(new LoadOrderCallback() {
+            @Override
+            public void onSuccess(Order order) {
+                callback.onSuccess(order);
+            }
+
+            @Override
+            public void onError() {
+                callback.onError();
+            }
+        });
     }
 
     @Override

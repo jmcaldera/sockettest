@@ -30,7 +30,24 @@ public class OrderPresenter implements OrderContract.Presenter {
     @Override
     public void start() {
         // Hacer algo al iniciar
-        loadOrder(true, true);
+//        loadOrder(true, true);
+        setOrderCallback();
+    }
+
+    private void setOrderCallback() {
+        mRepository.setLoadOrderCallback(new DataSource.LoadOrderCallback() {
+            @Override
+            public void onSuccess(Order order) {
+                Log.d(TAG, "onSuccess loadOrder Presenter");
+                mView.showOrder(order);
+            }
+
+            @Override
+            public void onError() {
+                Log.d(TAG, "onError loadOrder Presenter");
+                mView.showErrorMessage("Error cargando order");
+            }
+        });
     }
 
     private void loadOrder(boolean forceUpdate, boolean showLoading) {

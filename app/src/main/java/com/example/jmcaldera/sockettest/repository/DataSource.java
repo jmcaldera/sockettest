@@ -29,5 +29,7 @@ public interface DataSource {
 
     void loadOrder(LoadOrderCallback callback);
 
+    void setLoadOrderCallback(LoadOrderCallback callback);
+
     void refreshOrder();
 }

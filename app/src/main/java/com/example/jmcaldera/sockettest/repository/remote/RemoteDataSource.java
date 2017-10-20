@@ -1,12 +1,19 @@
 package com.example.jmcaldera.sockettest.repository.remote;
 
+import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.example.jmcaldera.sockettest.repository.DataSource;
 import com.example.jmcaldera.sockettest.repository.model.Order;
+import com.example.jmcaldera.sockettest.repository.remote.api.ApiConstants;
+import com.example.jmcaldera.sockettest.repository.remote.api.SocketHelper;
 import com.google.gson.Gson;
+
+import java.net.URISyntaxException;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by jmcaldera on 19/10/2017.
@@ -21,40 +28,73 @@ public class RemoteDataSource implements DataSource {
 
     private static final String TAG = RemoteDataSource.class.getSimpleName();
 
+    Context context;
+
+    // Socket.io
+    private SocketHelper mSocket = new SocketHelper();
+
     private static RemoteDataSource INSTANCE;
 
-    public static RemoteDataSource getInstance() {
+    public static RemoteDataSource getInstance(@NonNull Context context) {
         if (INSTANCE == null) {
-            INSTANCE = new RemoteDataSource();
+            INSTANCE = new RemoteDataSource(context);
         }
         return INSTANCE;
     }
 
-    private RemoteDataSource() {
-
+    private RemoteDataSource(@NonNull Context context) {
+        this.context = checkNotNull(context);
     }
+
     @Override
     public void openConnection(@NonNull final OpenConnectionCallback callback) {
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        checkNotNull(callback);
+//        Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.d(TAG, "openConn Success en RemoteDataSource");
+//                callback.onSuccess();
+//            }
+//        }, 2000);
+        mSocket.openConnection(new SocketHelper.OpenSocketConnectionCallback() {
             @Override
-            public void run() {
-                Log.d(TAG, "openConn Success en RemoteDataSource");
+            public void onSuccess() {
                 callback.onSuccess();
             }
-        }, 2000);
+
+            @Override
+            public void onError() {
+                callback.onError();
+            }
+        });
+
     }
 
     @Override
     public void closeConnection(@NonNull final CloseConnectionCallback callback) {
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+//        Handler handler = new Handler();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                callback.onSuccess();
+//                Log.d(TAG, "closeConn Success en RemoteDataSource");
+//            }
+//        }, 2000);
+
+        mSocket.closeConnection(new SocketHelper.CloseSocketConnectionCallback() {
             @Override
-            public void run() {
+            public void onSuccess() {
+                Log.d(TAG, "onSuccess CloseConn RemoteData");
                 callback.onSuccess();
-                Log.d(TAG, "closeConn Success en RemoteDataSource");
             }
-        }, 2000);
+
+            @Override
+            public void onError() {
+                Log.d(TAG, "onError CloseConn RemoteData");
+                callback.onError();
+            }
+        });
     }
 
     @Override
@@ -91,6 +131,25 @@ public class RemoteDataSource implements DataSource {
 
             }
         }, 2000);
+
+    }
+
+    @Override
+    public void setLoadOrderCallback(@NonNull final LoadOrderCallback callback) {
+        checkNotNull(callback);
+        mSocket.setLoadOrderCallback(new SocketHelper.LoadOrderSocketCallback() {
+            @Override
+            public void onSuccess(Order order) {
+                Log.d(TAG, "loadOrder Success RemoteDataSource");
+                callback.onSuccess(order);
+            }
+
+            @Override
+            public void onError() {
+                Log.d(TAG, "loadOrder Error RemoteDataSource");
+                callback.onError();
+            }
+        });
     }
 
     @Override
