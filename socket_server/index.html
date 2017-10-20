@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+  </head>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io.connect('http://localhost');
+    socket.on('order_received', function (data) {
+      console.log(data);
+    });
+    socket.emit('get_order', { my: 'data' });
+</script>
+<body>
+  <h1>Hola mundo</h1>
+</body>
+</html>
