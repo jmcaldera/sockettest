@@ -21,9 +21,9 @@ public class OrderRepository implements DataSource {
 
     private LoadOrderCallback mLoadOrderCallback = null;
 
-    Order mCachedOrder;
+    private Order mCachedOrder;
 
-    boolean mCacheIsOutdated = false;
+    private boolean mCacheIsOutdated = false;
 
     // Constructor privado
     private OrderRepository(@NonNull DataSource mRemoteDataSource) {
@@ -88,15 +88,6 @@ public class OrderRepository implements DataSource {
     public void loadOrder(@NonNull LoadOrderCallback callback) {
         checkNotNull(callback);
 
-//        if (!mCacheIsOutdated) {
-//            Log.d(TAG, "Return cachedOrder");
-//            callback.onSuccess(mCachedOrder);
-//            return;
-//        } else {
-//            Log.d(TAG, "Loading from remote");
-//            loadOrderFromRemoteDataSource(callback);
-//        }
-
         if (mCachedOrder != null) {
             callback.onSuccess(mCachedOrder);
         } else {
@@ -129,22 +120,6 @@ public class OrderRepository implements DataSource {
     @Override
     public boolean isConnected() {
         return mRemoteDataSource.isConnected();
-    }
-
-    private void loadOrderFromRemoteDataSource(@NonNull final LoadOrderCallback callback) {
-        checkNotNull(callback);
-        mRemoteDataSource.loadOrder(new LoadOrderCallback() {
-            @Override
-            public void onSuccess(Order order) {
-                refreshCache(order);
-                callback.onSuccess(mCachedOrder);
-            }
-
-            @Override
-            public void onError() {
-                callback.onError();
-            }
-        });
     }
 
     private void refreshCache(Order order) {

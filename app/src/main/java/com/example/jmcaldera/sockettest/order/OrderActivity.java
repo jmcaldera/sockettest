@@ -94,7 +94,6 @@ public class OrderActivity extends AppCompatActivity implements OrderContract.Vi
         Log.d(TAG, "Orders recibidas");
         Log.d(TAG, order.toString());
         mOrderText.setText(order.toString());
-        Toast.makeText(this, "Order recibida", Toast.LENGTH_SHORT).show();
     }
 
     @Override

@@ -26,17 +26,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class RemoteDataSource implements DataSource {
 
-    //TODO: Implementar retrofit para consulta http
-    //TODO: crear otro hilo para que la conexion se mantenga si se envia el app al background
-    //TODO: crear evento para recibir la respuesta http y enviarlo a la app
-    //TODO: arrancar la app nuevamente segun el evento y mostrar la respuesta
-
     private static final String TAG = RemoteDataSource.class.getSimpleName();
 
-    Context context;
-
-    // Socket.io
-    private SocketHelper mSocket = new SocketHelper();
+    private Context context;
 
     private static RemoteDataSource INSTANCE;
     private OpenConnectionCallback mOpenConnectionCallback = null;
@@ -67,25 +59,6 @@ public class RemoteDataSource implements DataSource {
     @Override
     public void openConnection(@NonNull final OpenConnectionCallback callback) {
         mOpenConnectionCallback = checkNotNull(callback);
-//        Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                Log.d(TAG, "openConn Success en RemoteDataSource");
-//                callback.onSuccess();
-//            }
-//        }, 2000);
-//        mSocket.openConnection(new SocketHelper.OpenSocketConnectionCallback() {
-//            @Override
-//            public void onSuccess() {
-//                callback.onSuccess();
-//            }
-//
-//            @Override
-//            public void onError() {
-//                callback.onError();
-//            }
-//        });
 
         Intent intent = new Intent(this.context, SocketHelper.class);
         intent.setAction(ApiConstants.ACTION_CONNECT_SERVER);
@@ -97,28 +70,6 @@ public class RemoteDataSource implements DataSource {
     public void closeConnection(@NonNull final CloseConnectionCallback callback) {
 
         mCloseConnectionCallback = checkNotNull(callback);
-//        Handler handler = new Handler();
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                callback.onSuccess();
-//                Log.d(TAG, "closeConn Success en RemoteDataSource");
-//            }
-//        }, 2000);
-
-//        mSocket.closeConnection(new SocketHelper.CloseSocketConnectionCallback() {
-//            @Override
-//            public void onSuccess() {
-//                Log.d(TAG, "onSuccess CloseConn RemoteData");
-//                callback.onSuccess();
-//            }
-//
-//            @Override
-//            public void onError() {
-//                Log.d(TAG, "onError CloseConn RemoteData");
-//                callback.onError();
-//            }
-//        });
 
         Intent intent = new Intent(this.context, SocketHelper.class);
         intent.setAction(ApiConstants.ACTION_DISCONNECT_SERVER);
@@ -165,19 +116,6 @@ public class RemoteDataSource implements DataSource {
     @Override
     public void setLoadOrderCallback(@NonNull final LoadOrderCallback callback) {
         mLoadOrderCallback = checkNotNull(callback);
-//        mSocket.setLoadOrderCallback(new SocketHelper.LoadOrderSocketCallback() {
-//            @Override
-//            public void onSuccess(Order order) {
-//                Log.d(TAG, "loadOrder Success RemoteDataSource");
-//                callback.onSuccess(order);
-//            }
-//
-//            @Override
-//            public void onError() {
-//                Log.d(TAG, "loadOrder Error RemoteDataSource");
-//                callback.onError();
-//            }
-//        });
     }
 
     @Override

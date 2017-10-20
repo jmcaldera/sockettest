@@ -29,7 +29,6 @@ public class OrderPresenter implements OrderContract.Presenter {
 
     @Override
     public void start() {
-        // Hacer algo al iniciar
 //        loadOrder(true, true);
         setOrderCallback();
     }
