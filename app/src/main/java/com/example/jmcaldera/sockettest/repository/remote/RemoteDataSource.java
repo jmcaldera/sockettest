@@ -1,10 +1,15 @@
 package com.example.jmcaldera.sockettest.repository.remote;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.example.jmcaldera.sockettest.order.OrderActivity;
 import com.example.jmcaldera.sockettest.repository.DataSource;
 import com.example.jmcaldera.sockettest.repository.model.Order;
 import com.example.jmcaldera.sockettest.repository.remote.api.ApiConstants;
@@ -34,6 +39,9 @@ public class RemoteDataSource implements DataSource {
     private SocketHelper mSocket = new SocketHelper();
 
     private static RemoteDataSource INSTANCE;
+    private OpenConnectionCallback mOpenConnectionCallback = null;
+    private CloseConnectionCallback mCloseConnectionCallback = null;
+    private LoadOrderCallback mLoadOrderCallback = null;
 
     public static RemoteDataSource getInstance(@NonNull Context context) {
         if (INSTANCE == null) {
@@ -44,11 +52,19 @@ public class RemoteDataSource implements DataSource {
 
     private RemoteDataSource(@NonNull Context context) {
         this.context = checkNotNull(context);
+
+        // Filter para el BR y el IntentService
+        IntentFilter filter = new IntentFilter(ApiConstants.ACTION_CONNECT_SERVER);
+        filter.addAction(ApiConstants.ACTION_DISCONNECT_SERVER);
+        filter.addAction(ApiConstants.ACTION_ORDER_RECEIVED);
+
+        SocketReceiver receiver = new SocketReceiver(context);
+        LocalBroadcastManager.getInstance(this.context).registerReceiver(receiver, filter);
     }
 
     @Override
     public void openConnection(@NonNull final OpenConnectionCallback callback) {
-        checkNotNull(callback);
+        mOpenConnectionCallback = checkNotNull(callback);
 //        Handler handler = new Handler();
 //        handler.postDelayed(new Runnable() {
 //            @Override
@@ -57,22 +73,28 @@ public class RemoteDataSource implements DataSource {
 //                callback.onSuccess();
 //            }
 //        }, 2000);
-        mSocket.openConnection(new SocketHelper.OpenSocketConnectionCallback() {
-            @Override
-            public void onSuccess() {
-                callback.onSuccess();
-            }
+//        mSocket.openConnection(new SocketHelper.OpenSocketConnectionCallback() {
+//            @Override
+//            public void onSuccess() {
+//                callback.onSuccess();
+//            }
+//
+//            @Override
+//            public void onError() {
+//                callback.onError();
+//            }
+//        });
 
-            @Override
-            public void onError() {
-                callback.onError();
-            }
-        });
+        Intent intent = new Intent(this.context, SocketHelper.class);
+        intent.setAction(ApiConstants.ACTION_CONNECT_SERVER);
+        context.startService(intent);
 
     }
 
     @Override
     public void closeConnection(@NonNull final CloseConnectionCallback callback) {
+
+        mCloseConnectionCallback = checkNotNull(callback);
 //        Handler handler = new Handler();
 //        handler.postDelayed(new Runnable() {
 //            @Override
@@ -82,19 +104,23 @@ public class RemoteDataSource implements DataSource {
 //            }
 //        }, 2000);
 
-        mSocket.closeConnection(new SocketHelper.CloseSocketConnectionCallback() {
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "onSuccess CloseConn RemoteData");
-                callback.onSuccess();
-            }
+//        mSocket.closeConnection(new SocketHelper.CloseSocketConnectionCallback() {
+//            @Override
+//            public void onSuccess() {
+//                Log.d(TAG, "onSuccess CloseConn RemoteData");
+//                callback.onSuccess();
+//            }
+//
+//            @Override
+//            public void onError() {
+//                Log.d(TAG, "onError CloseConn RemoteData");
+//                callback.onError();
+//            }
+//        });
 
-            @Override
-            public void onError() {
-                Log.d(TAG, "onError CloseConn RemoteData");
-                callback.onError();
-            }
-        });
+        Intent intent = new Intent(this.context, SocketHelper.class);
+        intent.setAction(ApiConstants.ACTION_DISCONNECT_SERVER);
+        context.startService(intent);
     }
 
     @Override
@@ -136,24 +162,63 @@ public class RemoteDataSource implements DataSource {
 
     @Override
     public void setLoadOrderCallback(@NonNull final LoadOrderCallback callback) {
-        checkNotNull(callback);
-        mSocket.setLoadOrderCallback(new SocketHelper.LoadOrderSocketCallback() {
-            @Override
-            public void onSuccess(Order order) {
-                Log.d(TAG, "loadOrder Success RemoteDataSource");
-                callback.onSuccess(order);
-            }
-
-            @Override
-            public void onError() {
-                Log.d(TAG, "loadOrder Error RemoteDataSource");
-                callback.onError();
-            }
-        });
+        mLoadOrderCallback = checkNotNull(callback);
+//        mSocket.setLoadOrderCallback(new SocketHelper.LoadOrderSocketCallback() {
+//            @Override
+//            public void onSuccess(Order order) {
+//                Log.d(TAG, "loadOrder Success RemoteDataSource");
+//                callback.onSuccess(order);
+//            }
+//
+//            @Override
+//            public void onError() {
+//                Log.d(TAG, "loadOrder Error RemoteDataSource");
+//                callback.onError();
+//            }
+//        });
     }
 
     @Override
     public void refreshOrder() {
         // No se utiliza
+    }
+
+    private class SocketReceiver extends BroadcastReceiver {
+        private Context mContext;
+        private SocketReceiver(@NonNull Context context) {
+            mContext = checkNotNull(context);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null) {
+                switch (intent.getAction()) {
+                    case ApiConstants.ACTION_CONNECT_SERVER:
+                        // Notificar que se conecto al servidor
+                        Log.d(TAG, "onSuccess Connect RemoteData");
+                        mOpenConnectionCallback.onSuccess();
+                        break;
+                    case ApiConstants.ACTION_DISCONNECT_SERVER:
+                        // Notificar que se desconecto del servidor
+                        Log.d(TAG, "onSuccess Disconnect RemoteData");
+                        mCloseConnectionCallback.onSuccess();
+                        break;
+                    case ApiConstants.ACTION_ORDER_RECEIVED:
+                        // Enviar la data recibida al UI
+                        Log.d(TAG, "loadOrder Success RemoteDataSource");
+                        String json = intent.getStringExtra(ApiConstants.EXTRA_ORDER_RECEIVED);
+                        Log.d(TAG, "Json RemoteDataSource: " + json);
+                        // Parsear a Order y enviar
+                        Gson gson = new Gson();
+                        Order order = gson.fromJson(json, Order.class);
+                        mLoadOrderCallback.onSuccess(order);
+                        Intent localIntent = new Intent(mContext, OrderActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mContext.startActivity(localIntent);
+                        break;
+                }
+
+            }
+        }
     }
 }

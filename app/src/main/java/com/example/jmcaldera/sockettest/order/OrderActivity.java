@@ -32,7 +32,7 @@ public class OrderActivity extends AppCompatActivity implements OrderContract.Vi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order);
 
-        new OrderPresenter(this, OrderRepository.getInstance(RemoteDataSource.getInstance()));
+        new OrderPresenter(this, OrderRepository.getInstance(RemoteDataSource.getInstance(this)));
 
         mBtnConnect = (Button) findViewById(R.id.btn_connect);
         mBtnConnect.setOnClickListener(new View.OnClickListener() {
@@ -88,6 +88,7 @@ public class OrderActivity extends AppCompatActivity implements OrderContract.Vi
         Log.d(TAG, "Orders recibidas");
         Log.d(TAG, order.toString());
         mOrderText.setText(order.toString());
+        Toast.makeText(this, "Order recibida", Toast.LENGTH_SHORT).show();
     }
 
     @Override
